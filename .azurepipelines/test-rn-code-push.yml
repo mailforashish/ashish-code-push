@@ -6,20 +6,36 @@ pr:
 
 variables:
 - name: api-level
-  value: '27' 
+  value: '27'
+- name: RENDER_API_KEY
+  value: ''  # Set this in Render.com environment variables
 
 pool:
   vmImage: 'macOS-12'
 
 stages:
-- stage: RunTests
-  displayName: 'Run Android & IOS tests'
+- stage: Test
   jobs:
+  - job: TestServer
+    displayName: 'Test Server'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '16.x'
+      displayName: 'Install Node.js'
+
+    - script: |
+        cd server
+        npm install
+        npm test
+      displayName: 'Run Server Tests'
+
   - job: TestAndroid
     timeoutInMinutes: 120
-    displayName: 'Test android'
+    displayName: 'Test Android'
     steps:
-
     - script: |
         adb devices
       displayName: 'Start adb server'
@@ -39,20 +55,13 @@ stages:
     - script: |
         $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
       displayName: 'Wait for emulator to boot'
-   
-    - script: |
-         adb shell settings put global window_animation_scale 0.0    
-      displayName: 'Disable animations and transitions'  
 
     - script: |
-         adb shell settings put global transition_animation_scale 0.0
-      displayName: 'Disable animations and transitions'
+        adb shell settings put global window_animation_scale 0.0
+        adb shell settings put global transition_animation_scale 0.0
+        adb shell settings put global animator_duration_scale 0.0
+      displayName: 'Disable animations'
 
-    - script: |
-         adb shell settings put global animator_duration_scale 0.0   
-      displayName: 'Disable animations and transitions'
-
-    
     - task: JavaToolInstaller@0
       inputs:
         versionSpec: '11'
@@ -74,9 +83,8 @@ stages:
 
   - job: TestIOS
     timeoutInMinutes: 120
-    displayName: 'Test IOS'
+    displayName: 'Test iOS'
     steps:
-
     - script: |
         npm install
       displayName: 'Install dependencies'
@@ -89,6 +97,16 @@ stages:
         npm run test:fast:ios
       displayName: 'Run tests'
 
-    
+- stage: Deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: DeployToRender
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        curl -X POST "https://api.render.com/deploy/srv-YOUR_SERVICE_ID?key=$(RENDER_API_KEY)"
+      displayName: 'Deploy to Render.com'
+
           
 
