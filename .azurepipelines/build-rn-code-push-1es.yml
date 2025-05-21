@@ -6,6 +6,10 @@ pr:
 
 name: $(Build.SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
 
+variables:
+  RENDER_SERVICE_ID: 'srv-YOUR_SERVICE_ID'  # Replace with your service ID
+  RENDER_API_KEY: $(RENDER_API_KEY)  # Will be set in pipeline variables
+
 jobs:
 - job: BuildAndDeploy
   pool:
@@ -48,6 +52,6 @@ jobs:
     displayName: 'Publish Build Artifacts'
 
   - script: |
-      curl -X POST "https://api.render.com/deploy/srv-YOUR_SERVICE_ID?key=YOUR_API_KEY"
+      curl -X POST "https://api.render.com/deploy/$(RENDER_SERVICE_ID)?key=$(RENDER_API_KEY)"
     displayName: 'Trigger Render.com Deploy'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
