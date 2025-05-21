@@ -9,7 +9,7 @@ let NativeCodePush = require("react-native").NativeModules.CodePush;
 const PackageMixins = require("./package-mixins")(NativeCodePush);
 
 // Configure your in-house server URL here
-const SERVER_URL = 'http://your-server-url:3000';
+const SERVER_URL = 'https://react-code-push.onrender.com';
 
 // Custom SDK implementation for in-house server
 class InHouseCodePushSdk extends Sdk {
