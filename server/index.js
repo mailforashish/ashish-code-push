@@ -3,11 +3,19 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const dotenv = require('dotenv');
+const cors = require('cors');
 
 dotenv.config();
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 const upload = multer({ dest: 'uploads/' });
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/code-push', {
