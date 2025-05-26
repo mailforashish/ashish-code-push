@@ -6,7 +6,7 @@ pr:
 
 variables:
 - name: api-level
-  value: '27'
+  value: '27' 
 - name: RENDER_API_KEY
   value: ''  # Set this in Render.com environment variables
 
@@ -55,13 +55,13 @@ stages:
     - script: |
         $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
       displayName: 'Wait for emulator to boot'
-
+   
     - script: |
-        adb shell settings put global window_animation_scale 0.0
-        adb shell settings put global transition_animation_scale 0.0
-        adb shell settings put global animator_duration_scale 0.0
+         adb shell settings put global window_animation_scale 0.0    
+         adb shell settings put global transition_animation_scale 0.0
+         adb shell settings put global animator_duration_scale 0.0   
       displayName: 'Disable animations'
-
+    
     - task: JavaToolInstaller@0
       inputs:
         versionSpec: '11'
@@ -107,6 +107,6 @@ stages:
     - script: |
         curl -X POST "https://api.render.com/deploy/srv-YOUR_SERVICE_ID?key=$(RENDER_API_KEY)"
       displayName: 'Deploy to Render.com'
-
+    
           
 
